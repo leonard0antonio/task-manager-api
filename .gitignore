@@ -1,0 +1,17 @@
+# Dependências
+node_modules/
+
+# Código Compilado
+dist/
+
+# Variáveis de Ambiente (MUITO IMPORTANTE)
+.env
+
+# Relatórios de Teste (Jest)
+coverage/
+
+# Logs e arquivos do SO
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
