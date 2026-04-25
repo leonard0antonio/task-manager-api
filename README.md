@@ -113,6 +113,4 @@ Desenvolvido por **Leonardo Antonio** *Estudante de Análise e Desenvolvimento d
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/leonardo-a-a063b519b/)
 [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/leonard0antonio)
 
----
 *Este projeto foi desenvolvido como parte de um desafio técnico para consolidar conhecimentos em Backend, APIs RESTful e Testes.*
-```
