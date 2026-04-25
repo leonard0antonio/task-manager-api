@@ -1,4 +1,3 @@
-```markdown
 # 🚀 Task Manager API
 
 Uma API robusta para Gerenciamento de Tarefas desenvolvida com **Node.js**, **TypeScript** e **Prisma**. O sistema permite a criação de contas, autenticação segura via JWT, gestão de equipas e controlo de tarefas com diferentes níveis de acesso (Admin e Membro).
