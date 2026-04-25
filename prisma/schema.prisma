@@ -1,3 +1,4 @@
+// O schema fornecido estabelece a conexão e os modelos base
 generator client {
   provider = "prisma-client-js"
 }
@@ -28,7 +29,7 @@ enum TaskPriority {
 model User {
   id            Int          @id @default(autoincrement())
   name          String       @db.VarChar(100)
-  email         String       @unique @db.VarChar(150)
+  email         String       @unique @db.VarChar(150) // Email único para login
   password      String       @db.VarChar(255)
   role          Role         @default(member)
   created_at    DateTime     @default(now())
@@ -36,7 +37,7 @@ model User {
 
   team_members  TeamMember[]
   tasks         Task[]       @relation("AssignedTasks")
-  history       TaskHistory[]
+  history       TaskHistory[] // Relacionamento com histórico
   
   @@map("users")
 }
@@ -44,7 +45,7 @@ model User {
 model Team {
   id            Int          @id @default(autoincrement())
   name          String       @db.VarChar(100)
-  description   String?      @db.Text
+  description   String?      @db.Text // Descrição opcional
   created_at    DateTime     @default(now())
   updated_at    DateTime     @updatedAt
 
@@ -61,7 +62,7 @@ model TeamMember {
   created_at DateTime @default(now())
 
   user       User     @relation(fields: [user_id], references: [id])
-  team       Team     @relation(fields: [team_id], references: [id])
+  team       Team     @relation(fields: [team_id], references: [id]) // FK para times
 
   @@map("team_members")
 }
@@ -69,15 +70,15 @@ model TeamMember {
 model Task {
   id          Int          @id @default(autoincrement())
   title       String       @db.VarChar(200)
-  description String?      @db.Text
+  description String?      @db.Text // Descrição opcional da tarefa
   status      TaskStatus   @default(pending)
   priority    TaskPriority
   assigned_to Int?
-  team_id     Int
+  team_id     Int // Referência ao time
   created_at  DateTime     @default(now())
   updated_at  DateTime     @updatedAt
 
-  assignee    User?        @relation("AssignedTasks", fields: [assigned_to], references: [id])
+  assignee    User?        @relation("AssignedTasks", fields: [assigned_to], references: [id]) // FK de usuário
   team        Team         @relation(fields: [team_id], references: [id])
   history     TaskHistory[]
 
@@ -93,7 +94,7 @@ model TaskHistory {
   changed_at DateTime   @default(now())
 
   task       Task       @relation(fields: [task_id], references: [id])
-  user       User       @relation(fields: [changed_by], references: [id])
+  user       User       @relation(fields: [changed_by], references: [id]) // FK de auditoria
 
   @@map("tasks_history")
 }
