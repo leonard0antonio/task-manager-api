@@ -124,12 +124,12 @@
                         name: document.getElementById('name').value,
                         email: document.getElementById('email').value,
                         password: document.getElementById('password').value,
-                        role: 'admin' // Forçando admin para você conseguir testar o painel
+                        role: 'member' // <-- AGORA CRIA USUÁRIOS COMUNS
                     })
                 });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error);
-                showMessage('authMessage', `Conta criada com sucesso! ID: ${data.id}. Clique em entrar.`);
+                showMessage('authMessage', `Conta de membro criada! Agora faça login como Admin para gerenciar.`);
                 toggleRegister();
             } catch (error) {
                 showMessage('authMessage', error.message, true);
@@ -151,16 +151,18 @@
                 if (!response.ok) throw new Error(data.error);
 
                 jwtToken = data.token;
-                currentUser = data.user;
+                currentUser = data.user; // A API retorna a role aqui (admin ou member)
                 
                 document.getElementById('authScreen').classList.add('hidden');
                 document.getElementById('catalogoScreen').classList.remove('hidden');
                 setTimeout(() => document.getElementById('catalogoScreen').classList.remove('opacity-0'), 50);
                 
-                // Se for admin, exibe o painel novo!
+                // SÓ EXIBE O PAINEL SE FOR O USUÁRIO ADMIN QUE JÁ EXISTE NO BANCO
                 if(currentUser.role === 'admin') {
                     document.getElementById('adminScreen').classList.remove('hidden');
                     setTimeout(() => document.getElementById('adminScreen').classList.remove('opacity-0'), 50);
+                } else {
+                    alert(`Bem-vindo, ${currentUser.name}! Você está logado como Membro.`);
                 }
 
                 loadTasks();
