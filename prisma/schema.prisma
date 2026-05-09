@@ -35,9 +35,14 @@ model User {
   created_at    DateTime     @default(now())
   updated_at    DateTime     @updatedAt
 
+  adminId   Int?     
+  admin     User?    @relation("AdminCreatedUsers", fields: [adminId], references: [id])
+  members   User[]   @relation("AdminCreatedUsers")
+
   team_members  TeamMember[]
   tasks         Task[]       @relation("AssignedTasks")
   history       TaskHistory[] // Relacionamento com histórico
+  
   
   @@map("users")
 }
