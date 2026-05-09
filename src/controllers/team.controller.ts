@@ -19,3 +19,14 @@ export const createTeam = async (req: AuthRequest, res: Response) => {
     return res.status(400).json({ error: 'Erro ao criar time' });
   }
 };
+
+export const getTeams = async (req: AuthRequest, res: Response) => {
+  try {
+    const teams = await prisma.team.findMany({
+      orderBy: { id: 'desc' } // Traz os mais novos primeiro
+    });
+    return res.json(teams);
+  } catch (error) {
+    return res.status(400).json({ error: 'Erro ao buscar times' });
+  }
+};
