@@ -6,8 +6,8 @@ jest.mock('../src/config/prisma', () => ({
   prisma: {
     task: {
       create: jest.fn(),
-      findUnique: jest.fn(), // <-- Adicionado
-      update: jest.fn(),     // <-- Adicionado
+      findUnique: jest.fn(),
+      update: jest.fn(),     
     },
     taskHistory: {
       create: jest.fn(),
