@@ -7,6 +7,7 @@ export class TaskService {
     return prisma.task.create({
       data: {
         ...data,
+        adminId: userId // <-- A MÁGICA DO ISOLAMENTO ACONTECE AQUI! O carimbo do dono.
       }
     });
   }

@@ -31,19 +31,26 @@ export const updateTaskStatus = async (req: AuthRequest, res: Response) => {
 
 export const listTasks = async (req: AuthRequest, res: Response) => {
   try {
-    const { id, role } = req.user!;
+    const { id, role, adminId: userAdminId } = req.user!;
 
+    // REGRA PARA ADMINISTRADOR: Só vê tarefas que ELE CRIOU
     if (role === 'admin') {
-      // Admin: Busca APENAS as tarefas que pertencem ao ecossistema dele
       const tasks = await prisma.task.findMany({
         where: { 
-          adminId: id // O isolamento acontece aqui!
+          adminId: id // O filtro mestre de isolamento
         },
-        include: { team: true, assignee: true }
+        include: { 
+          team: true, 
+          assignee: true 
+        },
+        orderBy: { created_at: 'desc' }
       });
       return res.json(tasks);
-    } else {
-      // Member: Busca apenas tarefas dos times que ele faz parte
+    } 
+    
+    // REGRA PARA MEMBRO: Só vê tarefas atribuídas a ele ou do time dele
+    else {
+      // 1. Descobrimos os times que esse membro participa
       const userTeams = await prisma.teamMember.findMany({
         where: { user_id: id },
         select: { team_id: true }
@@ -52,13 +59,23 @@ export const listTasks = async (req: AuthRequest, res: Response) => {
       const teamIds = userTeams.map(ut => ut.team_id);
 
       const tasks = await prisma.task.findMany({
-        where: { team_id: { in: teamIds } },
-        include: { team: true, assignee: true }
+        where: {
+          OR: [
+            { assigned_to: id },         // Tarefas diretas para ele
+            { team_id: { in: teamIds } } // Tarefas do time dele
+          ]
+        },
+        include: { 
+          team: true, 
+          assignee: true 
+        },
+        orderBy: { created_at: 'desc' }
       });
       return res.json(tasks);
     }
   } catch (error: any) {
-    return res.status(500).json({ error: 'Erro ao buscar tarefas.' });
+    console.error('Erro ao listar tarefas:', error);
+    return res.status(500).json({ error: 'Erro interno ao buscar suas tarefas.' });
   }
 };
 
