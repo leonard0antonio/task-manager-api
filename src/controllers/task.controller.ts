@@ -111,3 +111,33 @@ export const deleteTask = async (req: AuthRequest, res: Response) => {
     return res.status(400).json({ error: 'Erro ao deletar tarefa.' });
   }
 };
+
+// Edita todos os dados da Tarefa
+export const updateTask = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { title, description, priority, team_id, assigned_to } = req.body;
+
+    // Garante que a tarefa pertence ao Admin logado
+    const task = await prisma.task.findFirst({
+      where: { id: Number(id), adminId: req.user!.id }
+    });
+
+    if (!task) return res.status(404).json({ error: 'Tarefa não encontrada.' });
+
+    await prisma.task.update({
+      where: { id: Number(id) },
+      data: {
+        title,
+        description,
+        priority,
+        team_id: Number(team_id),
+        assigned_to: assigned_to ? Number(assigned_to) : null
+      }
+    });
+
+    return res.json({ message: 'Tarefa atualizada com sucesso!' });
+  } catch (error) {
+    return res.status(400).json({ error: 'Erro ao atualizar tarefa.' });
+  }
+};
