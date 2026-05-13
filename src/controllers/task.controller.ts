@@ -31,13 +31,14 @@ export const updateTaskStatus = async (req: AuthRequest, res: Response) => {
 
 export const listTasks = async (req: AuthRequest, res: Response) => {
   try {
-    const { id, role, adminId: userAdminId } = req.user!;
+    // CORREÇÃO: Tiramos o adminId daqui. O TypeScript agora fica feliz!
+    const { id, role } = req.user!;
 
     // REGRA PARA ADMINISTRADOR: Só vê tarefas que ELE CRIOU
     if (role === 'admin') {
       const tasks = await prisma.task.findMany({
         where: { 
-          adminId: id // O filtro mestre de isolamento
+          adminId: id // O filtro mestre de isolamento usa o próprio 'id' do Admin logado
         },
         include: { 
           team: true, 
