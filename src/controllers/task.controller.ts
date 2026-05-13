@@ -15,13 +15,17 @@ export const createTask = async (req: AuthRequest, res: Response) => {
 };
 
 export const updateTaskStatus = async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  const { status } = req.body; // 'pending', 'in_progress', ou 'completed'
+
   try {
-    const { id } = req.params;
-    const { status } = req.body;
-    const task = await taskService.updateTaskStatus(Number(id), status, req.user!.id);
-    res.json(task);
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
+    const task = await prisma.task.update({
+      where: { id: Number(id) },
+      data: { status }
+    });
+    return res.json(task);
+  } catch (error) {
+    return res.status(400).json({ error: 'Erro ao atualizar status da tarefa' });
   }
 };
 
