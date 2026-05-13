@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.0.1](https://github.com/leonard0antonio/task-manager-api/compare/v1.0.0...v1.0.1) (2026-05-13)
+
+
+### ♻️ Refatoração de Código
+
+* isola exclusao e listagem de tarefas por admin ([c9ad06e](https://github.com/leonard0antonio/task-manager-api/commit/c9ad06e02801cbc5a6c7cf626fc4a0df4a2eacf3))
+
 ## 1.0.0 (2026-05-11)
 
 
