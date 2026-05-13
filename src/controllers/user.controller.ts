@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { prisma } from '../config/prisma';
 import { AuthRequest } from '../middlewares/auth.middleware';
+import bcrypt from 'bcryptjs';
 
 // 1. LISTAR USUÁRIOS
 export const getUsers = async (req: AuthRequest, res: Response) => {
@@ -15,6 +16,28 @@ export const getUsers = async (req: AuthRequest, res: Response) => {
     return res.json(users);
   } catch (error) {
     return res.status(400).json({ error: 'Erro ao buscar seus usuários' });
+  }
+};
+
+export const createUser = async (req: AuthRequest, res: Response) => {
+  const { name, email, password, role } = req.body;
+  
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    const newUser = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        role: role || 'member',
+        adminId: req.user!.id // A MÁGICA ACONTECE AQUI: Carimba o ID do Admin!
+      }
+    });
+
+    return res.status(201).json({ message: 'Usuário criado', userId: newUser.id });
+  } catch (error) {
+    return res.status(400).json({ error: 'Erro ao criar usuário. Email já existe?' });
   }
 };
 
