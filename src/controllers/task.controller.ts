@@ -1,13 +1,12 @@
 import { Response } from 'express';
 import { TaskService } from '../services/task.service';
 import { AuthRequest } from '../middlewares/auth.middleware';
-import { prisma } from '../config/prisma'; // <-- Adicione esta linha!
+import { prisma } from '../config/prisma';
 
 const taskService = new TaskService();
 
 export const createTask = async (req: AuthRequest, res: Response) => {
   try {
-    // Controller atua como intermediário: pega do body e manda pro Service
     const task = await taskService.createTask(req.body, req.user!.id);
     res.status(201).json(task);
   } catch (error: any) {
@@ -31,8 +30,11 @@ export const listTasks = async (req: AuthRequest, res: Response) => {
     const { id, role } = req.user!;
 
     if (role === 'admin') {
-      // Admin: Busca todas as tarefas
+      // Admin: Busca APENAS as tarefas que pertencem ao ecossistema dele
       const tasks = await prisma.task.findMany({
+        where: { 
+          adminId: id // O isolamento acontece aqui!
+        },
         include: { team: true, assignee: true }
       });
       return res.json(tasks);
@@ -64,7 +66,21 @@ export const deleteTask = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'Apenas administradores podem deletar tarefas.' });
     }
 
-    // Deleta o histórico primeiro para não quebrar a chave estrangeira (Integridade Relacional)
+    // 1. Busca a tarefa ANTES de deletar para checar a propriedade
+    const task = await prisma.task.findUnique({
+      where: { id: Number(id) }
+    });
+
+    if (!task) {
+      return res.status(404).json({ error: 'Tarefa não encontrada.' });
+    }
+
+    // 2. Trava Multi-Tenant: O Admin logado é o verdadeiro dono dessa tarefa?
+    if (task.adminId !== req.user.id) {
+      return res.status(403).json({ error: 'Você não tem permissão para deletar uma tarefa de outro administrador.' });
+    }
+
+    // 3. Deleta o histórico primeiro para manter a Integridade Relacional
     await prisma.taskHistory.deleteMany({ where: { task_id: Number(id) } });
     await prisma.task.delete({ where: { id: Number(id) } });
 
