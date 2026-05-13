@@ -1,6 +1,6 @@
 {
   "name": "@leonard0antonio/task-manager-api",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "API para gerenciamento de tarefas",
   "main": "src/server.ts",
   "scripts": {
