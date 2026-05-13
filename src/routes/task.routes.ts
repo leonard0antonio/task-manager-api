@@ -4,16 +4,12 @@ import { authenticate, authorizeAdmin } from '../middlewares/auth.middleware';
 
 const router = Router();
 
-router.use(authenticate); // Todas as rotas abaixo exigem token
+// Middleware global para este arquivo: todas as rotas abaixo exigem token
+router.use(authenticate); 
 
-router.post('/', createTask);
-router.patch('/:id/status', updateTaskStatus);
-
-// Novas rotas:
-router.get('/', listTasks);
-router.delete('/:id', deleteTask);
-
-router.patch('/:id/status', authenticate, updateTaskStatus); // Qualquer usuário logado pode mudar o status
-router.delete('/:id', authenticate, authorizeAdmin, deleteTask); // Apenas admin pode apagar a tarefa
+router.post('/', authorizeAdmin, createTask); // Só admin cria tarefa
+router.get('/', listTasks);                   // Todos listam (a controller filtra quem vê o que)
+router.patch('/:id/status', updateTaskStatus); // Qualquer usuário logado pode mudar o status
+router.delete('/:id', authorizeAdmin, deleteTask); // Apenas admin pode apagar a tarefa
 
 export default router;
