@@ -31,52 +31,51 @@ export const updateTaskStatus = async (req: AuthRequest, res: Response) => {
 
 export const listTasks = async (req: AuthRequest, res: Response) => {
   try {
-    // CORREÇÃO: Tiramos o adminId daqui. O TypeScript agora fica feliz!
-    const { id, role } = req.user!;
+    // 1. Busca o usuário fresquinho do banco para ter 100% de certeza dos dados
+    const currentUser = await prisma.user.findUnique({
+      where: { id: req.user!.id }
+    });
 
-    // REGRA PARA ADMINISTRADOR: Só vê tarefas que ELE CRIOU
-    if (role === 'admin') {
-      const tasks = await prisma.task.findMany({
-        where: { 
-          adminId: id // O filtro mestre de isolamento usa o próprio 'id' do Admin logado
-        },
-        include: { 
-          team: true, 
-          assignee: true 
-        },
+    if (!currentUser) {
+      return res.status(404).json({ error: 'Usuário não encontrado.' });
+    }
+
+    // 2. Trava de Segurança Absoluta do Workspace
+    // Se for admin, o dono é ele mesmo. Se for membro, o dono é o adminId dele.
+    const workspaceId = currentUser.role === 'admin' ? currentUser.id : currentUser.adminId;
+
+    // Se o workspaceId vier vazio, bloqueamos o acesso na hora (Prevenção de Data Leak)
+    if (!workspaceId) {
+      return res.status(403).json({ error: 'Falha de segurança: Workspace não identificado.' });
+    }
+
+    let tasks;
+
+    if (currentUser.role === 'admin') {
+      // 👑 ADMIN: Vê todas as tarefas do SEU workspace
+      tasks = await prisma.task.findMany({
+        where: { adminId: workspaceId },
+        include: { team: true, assignee: true },
         orderBy: { created_at: 'desc' }
       });
-      return res.json(tasks);
-    } 
-    
-    // REGRA PARA MEMBRO: Só vê tarefas atribuídas a ele ou do time dele
-    else {
-      // 1. Descobrimos os times que esse membro participa
-      const userTeams = await prisma.teamMember.findMany({
-        where: { user_id: id },
-        select: { team_id: true }
-      });
-      
-      const teamIds = userTeams.map(ut => ut.team_id);
-
-      const tasks = await prisma.task.findMany({
+    } else {
+      // 🎯 MEMBRO: Vê suas próprias tarefas ou as abertas, MAS SOMENTE NO SEU WORKSPACE
+      tasks = await prisma.task.findMany({
         where: {
+          adminId: workspaceId, // Agora temos 100% de certeza que isso é um número e a trava vai funcionar
           OR: [
-            { assigned_to: id },         // Tarefas diretas para ele
-            { team_id: { in: teamIds } } // Tarefas do time dele
+            { assigned_to: currentUser.id },
+            { assigned_to: null }
           ]
         },
-        include: { 
-          team: true, 
-          assignee: true 
-        },
+        include: { team: true, assignee: true },
         orderBy: { created_at: 'desc' }
       });
-      return res.json(tasks);
     }
-  } catch (error: any) {
-    console.error('Erro ao listar tarefas:', error);
-    return res.status(500).json({ error: 'Erro interno ao buscar suas tarefas.' });
+
+    return res.json(tasks);
+  } catch (error) {
+    return res.status(400).json({ error: 'Erro ao listar tarefas do workspace.' });
   }
 };
 

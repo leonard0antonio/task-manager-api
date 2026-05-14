@@ -2,7 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 export interface AuthRequest extends Request {
-  user?: { id: number; role: string };
+  user?: {
+    adminId: any; id: number; role: string 
+};
 }
 
 // Intercepta a requisição, valida o JWT e anexa os dados do usuário no 'req'
