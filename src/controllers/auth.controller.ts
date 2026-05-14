@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { registerSchema, loginSchema } from '../schemas/auth.schema';
 
 export const register = async (req: Request, res: Response) => {
+
   try {
     // 1. Valida os dados usando o Zod
     const data = registerSchema.parse(req.body);

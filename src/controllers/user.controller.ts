@@ -22,6 +22,11 @@ export const getUsers = async (req: AuthRequest, res: Response) => {
 export const createUser = async (req: AuthRequest, res: Response) => {
   const { name, email, password, role } = req.body;
   
+  const userExists = await prisma.user.findUnique({ where: { email } });
+    if (userExists) {
+      return res.status(400).json({ error: 'Este e-mail já está cadastrado no sistema.' });
+    }
+
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     
