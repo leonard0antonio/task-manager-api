@@ -39,6 +39,8 @@ model User {
   admin         User?         @relation("AdminCreatedUsers", fields: [adminId], references: [id])
   members       User[]        @relation("AdminCreatedUsers")
 
+  teams Team[]
+
   team_members  TeamMember[]
   tasks         Task[]        @relation("AssignedTasks") // Tarefas que o usuário VAI FAZER
   created_tasks Task[]        @relation("AdminTasks")    // CORREÇÃO: Tarefas que o Admin CRIOU
@@ -53,6 +55,9 @@ model Team {
   description   String?       @db.Text
   created_at    DateTime      @default(now())
   updated_at    DateTime      @updatedAt
+
+  adminId     Int?         
+  admin       User?        @relation(fields: [adminId], references: [id])
 
   members       TeamMember[]
   tasks         Task[]

@@ -3,19 +3,17 @@ import { prisma } from '../config/prisma';
 import { AuthRequest } from '../middlewares/auth.middleware';
 
 export const createTeam = async (req: AuthRequest, res: Response) => {
+  const { name } = req.body;
+  
   try {
-    const { name } = req.body;
-    
-    if (!name) {
-      return res.status(400).json({ error: 'O nome do time é obrigatório' });
-    }
-
-    const team = await prisma.team.create({
-      data: { name },
+    const newTeam = await prisma.team.create({
+      data: { 
+        name,
+        adminId: req.user!.id // A MÁGICA AQUI: Salva quem é o dono do time
+      }
     });
-
-    return res.status(201).json(team);
-  } catch (error: any) {
+    return res.status(201).json(newTeam);
+  } catch (error) {
     return res.status(400).json({ error: 'Erro ao criar time' });
   }
 };
@@ -23,7 +21,10 @@ export const createTeam = async (req: AuthRequest, res: Response) => {
 export const getTeams = async (req: AuthRequest, res: Response) => {
   try {
     const teams = await prisma.team.findMany({
-      orderBy: { id: 'desc' } // Traz os mais novos primeiro
+      where: {
+        adminId: req.user!.id // SÓ TRAZ OS TIMES QUE ESTE ADMIN CRIOU
+      },
+      orderBy: { name: 'asc' }
     });
     return res.json(teams);
   } catch (error) {
